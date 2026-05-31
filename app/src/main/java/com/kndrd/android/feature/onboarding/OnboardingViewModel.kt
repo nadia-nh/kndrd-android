@@ -47,6 +47,31 @@ class OnboardingViewModel @Inject constructor(
         }
     }
 
+    fun continueAsGuest(onDone: () -> Unit) {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
+            val user = User(
+                id = "guest",
+                name = "Guest",
+                age = 0,
+                bio = "",
+                photoUrl = null,
+                neighborhood = "New York City",
+                interests = listOf(Interest.COFFEE, Interest.FOOD, Interest.OUTDOORS),
+                isVerified = false,
+                joinedPlanIds = emptyList(),
+            )
+            userRepository.setCurrentUser(user)
+            userPreferences.completeOnboarding(
+                userId = "guest",
+                name = "Guest",
+                interestsJson = "COFFEE,FOOD,OUTDOORS",
+            )
+            _state.update { it.copy(isLoading = false) }
+            onDone()
+        }
+    }
+
     fun completeOnboarding(onDone: () -> Unit) {
         val s = _state.value
         viewModelScope.launch {

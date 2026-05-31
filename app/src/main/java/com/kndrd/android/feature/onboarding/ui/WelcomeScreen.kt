@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 fun WelcomeScreen(
     onGetStarted: () -> Unit,
     onSignIn: () -> Unit,
+    onContinueAsGuest: () -> Unit,
 ) {
     Column(
         modifier = Modifier.fillMaxSize().padding(32.dp),
@@ -35,6 +36,16 @@ fun WelcomeScreen(
         }
         TextButton(onClick = onSignIn, modifier = Modifier.padding(top = 8.dp)) {
             Text("Sign In")
+        }
+        TextButton(
+            onClick = onContinueAsGuest,
+            modifier = Modifier.padding(top = 4.dp),
+        ) {
+            Text(
+                "Browse without an account",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }

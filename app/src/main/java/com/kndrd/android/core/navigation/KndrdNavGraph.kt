@@ -41,9 +41,19 @@ fun KndrdNavGraph(
             startDestination = Route.Welcome.path,
         ) {
             composable(Route.Welcome.path) {
+                val vm = hiltViewModel<OnboardingViewModel>(
+                    rootNavController.getBackStackEntry(Route.OnboardingGraph.path)
+                )
                 WelcomeScreen(
                     onGetStarted = { rootNavController.navigate(Route.SignUp.path) },
                     onSignIn = { rootNavController.navigate(Route.SignUp.path) },
+                    onContinueAsGuest = {
+                        vm.continueAsGuest {
+                            rootNavController.navigate(Route.MainGraph.path) {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        }
+                    },
                 )
             }
             composable(Route.SignUp.path) {
