@@ -28,6 +28,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.kndrd.android.feature.chatdetail.ui.ChatDetailScreen
+import com.kndrd.android.feature.chats.ui.ChatsScreen
+import com.kndrd.android.feature.createplan.ui.CreatePlanScreen
+import com.kndrd.android.feature.feed.ui.FeedScreen
+import com.kndrd.android.feature.forum.ui.ForumScreen
+import com.kndrd.android.feature.plandetail.ui.PlanDetailScreen
+import com.kndrd.android.feature.profile.ui.ProfileScreen
 
 private data class BottomNavItem(
     val route: String,
@@ -44,34 +51,29 @@ private val bottomNavItems = listOf(
     BottomNavItem(Route.Profile.path, "Profile", Icons.Filled.Person, Icons.Outlined.Person),
 )
 
+// Routes where the bottom bar should be hidden (detail screens)
+private val bottomBarHiddenRoutes = setOf(
+    Route.PlanDetail.path,
+    Route.ChatDetail.path,
+)
+
 @Composable
-fun MainScaffold(
-    feedScreen: @Composable () -> Unit,
-    planDetailScreen: @Composable (planId: String) -> Unit,
-    createPlanScreen: @Composable () -> Unit,
-    chatsScreen: @Composable () -> Unit,
-    chatDetailScreen: @Composable (roomId: String) -> Unit,
-    forumScreen: @Composable () -> Unit,
-    profileScreen: @Composable () -> Unit,
-) {
+fun MainScaffold() {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentDestination = navBackStackEntry?.destination
+    val currentRoute = navBackStackEntry?.destination?.route
 
-    val showBottomBar = currentDestination?.route?.let { route ->
-        bottomNavItems.any { it.route == route } ||
-                route == Route.Feed.path ||
-                route == Route.Chats.path ||
-                route == Route.Forum.path ||
-                route == Route.Profile.path
-    } ?: true
+    // Hide bottom bar on detail screens
+    val showBottomBar = currentRoute == null ||
+            bottomBarHiddenRoutes.none { currentRoute.startsWith(it.substringBefore("{")) }
 
     Scaffold(
         bottomBar = {
             if (showBottomBar) {
                 NavigationBar {
                     bottomNavItems.forEach { item ->
-                        val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
+                        val selected =
+                            navBackStackEntry?.destination?.hierarchy?.any { it.route == item.route } == true
                         NavigationBarItem(
                             icon = {
                                 Icon(
@@ -101,19 +103,51 @@ fun MainScaffold(
             startDestination = Route.Feed.path,
             modifier = Modifier.padding(innerPadding),
         ) {
-            composable(Route.Feed.path) { feedScreen() }
+            composable(Route.Feed.path) {
+                FeedScreen(
+                    onPlanClick = { planId -> navController.navigateToPlanDetail(planId) },
+                )
+            }
+
             composable(Route.PlanDetail.path) { backStackEntry ->
                 val planId = backStackEntry.arguments?.getString("planId") ?: return@composable
-                planDetailScreen(planId)
+                PlanDetailScreen(
+                    planId = planId,
+                    onBack = { navController.popBackStack() },
+                    onJoined = { roomId ->
+                        // Pop back to Feed, then open the chat room
+                        navController.popBackStack(Route.Feed.path, inclusive = false)
+                        navController.navigate(Route.Chats.path) {
+                            launchSingleTop = true
+                        }
+                        navController.navigateToChatDetail(roomId)
+                    },
+                )
             }
-            composable(Route.CreatePlan.path) { createPlanScreen() }
-            composable(Route.Chats.path) { chatsScreen() }
+
+            composable(Route.CreatePlan.path) {
+                CreatePlanScreen(
+                    onCreated = { navController.popBackStack() },
+                )
+            }
+
+            composable(Route.Chats.path) {
+                ChatsScreen(
+                    onRoomClick = { roomId -> navController.navigateToChatDetail(roomId) },
+                )
+            }
+
             composable(Route.ChatDetail.path) { backStackEntry ->
                 val roomId = backStackEntry.arguments?.getString("roomId") ?: return@composable
-                chatDetailScreen(roomId)
+                ChatDetailScreen(
+                    roomId = roomId,
+                    onBack = { navController.popBackStack() },
+                )
             }
-            composable(Route.Forum.path) { forumScreen() }
-            composable(Route.Profile.path) { profileScreen() }
+
+            composable(Route.Forum.path) { ForumScreen() }
+
+            composable(Route.Profile.path) { ProfileScreen() }
         }
     }
 }

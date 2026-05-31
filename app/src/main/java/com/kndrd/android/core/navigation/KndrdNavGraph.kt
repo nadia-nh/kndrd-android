@@ -7,18 +7,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
-import com.kndrd.android.feature.chatdetail.ui.ChatDetailScreen
-import com.kndrd.android.feature.chats.ui.ChatsScreen
-import com.kndrd.android.feature.createplan.ui.CreatePlanScreen
-import com.kndrd.android.feature.feed.ui.FeedScreen
-import com.kndrd.android.feature.forum.ui.ForumScreen
 import com.kndrd.android.feature.onboarding.OnboardingViewModel
 import com.kndrd.android.feature.onboarding.ui.InterestSelectionScreen
 import com.kndrd.android.feature.onboarding.ui.SignUpScreen
 import com.kndrd.android.feature.onboarding.ui.VerificationScreen
 import com.kndrd.android.feature.onboarding.ui.WelcomeScreen
-import com.kndrd.android.feature.plandetail.ui.PlanDetailScreen
-import com.kndrd.android.feature.profile.ui.ProfileScreen
 
 @Composable
 fun KndrdNavGraph(
@@ -91,45 +84,7 @@ fun KndrdNavGraph(
         }
 
         composable(Route.MainGraph.path) {
-            MainScaffold(
-                feedScreen = {
-                    FeedScreen(
-                        onPlanClick = { planId ->
-                            rootNavController.navigateToPlanDetail(planId)
-                        }
-                    )
-                },
-                planDetailScreen = { planId ->
-                    PlanDetailScreen(
-                        planId = planId,
-                        onBack = { rootNavController.popBackStack() },
-                        onJoined = { roomId ->
-                            rootNavController.navigate(Route.MainGraph.path) {
-                                popUpTo(Route.MainGraph.path) { inclusive = false }
-                            }
-                            rootNavController.navigateToChatDetail(roomId)
-                        },
-                    )
-                },
-                createPlanScreen = {
-                    CreatePlanScreen(
-                        onCreated = { rootNavController.popBackStack() },
-                    )
-                },
-                chatsScreen = {
-                    ChatsScreen(
-                        onRoomClick = { roomId -> rootNavController.navigateToChatDetail(roomId) }
-                    )
-                },
-                chatDetailScreen = { roomId ->
-                    ChatDetailScreen(
-                        roomId = roomId,
-                        onBack = { rootNavController.popBackStack() },
-                    )
-                },
-                forumScreen = { ForumScreen() },
-                profileScreen = { ProfileScreen() },
-            )
+            MainScaffold()
         }
     }
 }
