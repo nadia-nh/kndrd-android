@@ -6,4 +6,9 @@
     </style>
 
     <style name="Theme.KndrdAndroid" parent="Base.Theme.KndrdAndroid" />
+
+    <style name="Theme.KndrdAndroid.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="postSplashScreenTheme">@style/Theme.KndrdAndroid</item>
+    </style>
 </resources>
