@@ -20,11 +20,13 @@ data class PlanDetailUiState(
     val plan: Plan? = null,
     val isLoading: Boolean = true,
     val isJoining: Boolean = false,
+    val isLeaving: Boolean = false,
     val error: String? = null,
 )
 
 sealed class PlanDetailEvent {
     data class NavigateToChat(val roomId: String) : PlanDetailEvent()
+    data object LeftPlan : PlanDetailEvent()
 }
 
 @HiltViewModel
@@ -60,6 +62,22 @@ class PlanDetailViewModel @Inject constructor(
                 },
                 onFailure = { e ->
                     _uiState.update { it.copy(isJoining = false, error = e.message) }
+                },
+            )
+        }
+    }
+
+    fun leavePlan() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLeaving = true) }
+            val userId = userPreferences.currentUserId.first() ?: "user-1"
+            feedRepository.leavePlan(planId, userId).fold(
+                onSuccess = {
+                    _uiState.update { it.copy(isLeaving = false, plan = it.plan?.copy(isJoined = false)) }
+                    _events.emit(PlanDetailEvent.LeftPlan)
+                },
+                onFailure = { e ->
+                    _uiState.update { it.copy(isLeaving = false, error = e.message) }
                 },
             )
         }

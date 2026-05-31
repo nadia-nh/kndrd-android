@@ -10,6 +10,7 @@ interface FeedRepository {
     fun observePlansByInterest(interest: Interest): Flow<List<Plan>>
     suspend fun getPlan(id: String): Plan?
     suspend fun joinPlan(planId: String, userId: String): Result<ChatRoom>
+    suspend fun leavePlan(planId: String, userId: String): Result<Unit>
     suspend fun createPlan(plan: Plan): Result<Plan>
     suspend fun refresh()
 }

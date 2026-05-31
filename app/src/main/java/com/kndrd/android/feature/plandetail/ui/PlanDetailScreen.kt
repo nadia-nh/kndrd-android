@@ -1,5 +1,9 @@
 package com.kndrd.android.feature.plandetail.ui
 
+import android.content.Intent
+import android.net.Uri
+import android.provider.CalendarContract
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,11 +24,13 @@ import androidx.compose.material.icons.outlined.Group
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
@@ -37,6 +43,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -56,11 +63,13 @@ fun PlanDetailScreen(
     viewModel: PlanDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
                 is PlanDetailEvent.NavigateToChat -> onJoined(event.roomId)
+                is PlanDetailEvent.LeftPlan -> onBack()
             }
         }
     }
@@ -116,20 +125,61 @@ fun PlanDetailScreen(
                 }
             }
 
-            // Location + time
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Outlined.LocationOn, contentDescription = null, modifier = Modifier.size(18.dp))
+            // Location — tapping opens Maps
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .clickable {
+                        val uri = Uri.parse("geo:0,0?q=${Uri.encode(plan.location)}")
+                        context.startActivity(Intent(Intent.ACTION_VIEW, uri))
+                    }
+                    .padding(vertical = 4.dp),
+            ) {
+                Icon(
+                    Icons.Outlined.LocationOn,
+                    contentDescription = "Open in Maps",
+                    modifier = Modifier.size(18.dp),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
                 Spacer(Modifier.width(6.dp))
-                Text(plan.location, style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    plan.location,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                )
             }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Outlined.Schedule, contentDescription = null, modifier = Modifier.size(18.dp))
+
+            // Date/time — tapping opens Calendar
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .clickable {
+                        val intent = Intent(Intent.ACTION_INSERT).apply {
+                            data = CalendarContract.Events.CONTENT_URI
+                            putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, plan.dateTimeMs)
+                            putExtra(CalendarContract.EXTRA_EVENT_END_TIME, plan.dateTimeMs + 2 * 3_600_000L)
+                            putExtra(CalendarContract.Events.TITLE, plan.title)
+                            putExtra(CalendarContract.Events.EVENT_LOCATION, plan.location)
+                            putExtra(CalendarContract.Events.DESCRIPTION, plan.description)
+                        }
+                        context.startActivity(intent)
+                    }
+                    .padding(vertical = 4.dp),
+            ) {
+                Icon(
+                    Icons.Outlined.Schedule,
+                    contentDescription = "Add to Calendar",
+                    modifier = Modifier.size(18.dp),
+                    tint = MaterialTheme.colorScheme.primary,
+                )
                 Spacer(Modifier.width(6.dp))
                 Text(
                     SimpleDateFormat("EEEE, MMMM d · h:mm a", Locale.US).format(Date(plan.dateTimeMs)),
                     style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
                 )
             }
+
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Outlined.Group, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(6.dp))
@@ -146,12 +196,32 @@ fun PlanDetailScreen(
             Spacer(Modifier.height(8.dp))
 
             if (plan.isJoined) {
+                // "You're going" indicator
                 Button(
                     onClick = {},
                     modifier = Modifier.fillMaxWidth(),
                     enabled = false,
                 ) {
                     Text("You're going ✓")
+                }
+                // Leave plan
+                OutlinedButton(
+                    onClick = viewModel::leavePlan,
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !state.isLeaving,
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error,
+                    ),
+                ) {
+                    if (state.isLeaving) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.error,
+                        )
+                    } else {
+                        Text("Leave plan")
+                    }
                 }
             } else {
                 Button(

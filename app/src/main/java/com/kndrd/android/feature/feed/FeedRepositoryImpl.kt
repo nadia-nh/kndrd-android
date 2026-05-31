@@ -51,6 +51,20 @@ class FeedRepositoryImpl @Inject constructor(
         return Result.success(room)
     }
 
+    override suspend fun leavePlan(planId: String, userId: String): Result<Unit> {
+        delay(300)
+        val plan = _plans.value.find { it.id == planId }
+            ?: return Result.failure(IllegalArgumentException("Plan not found"))
+
+        val updatedPlan = plan.copy(
+            isJoined = false,
+            currentAttendees = (plan.currentAttendees - 1).coerceAtLeast(0),
+            attendeeIds = plan.attendeeIds - userId,
+        )
+        _plans.value = _plans.value.map { if (it.id == planId) updatedPlan else it }
+        return Result.success(Unit)
+    }
+
     override suspend fun createPlan(plan: Plan): Result<Plan> {
         delay(400)
         val newPlan = plan.copy(

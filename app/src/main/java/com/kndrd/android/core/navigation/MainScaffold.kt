@@ -51,26 +51,14 @@ private val bottomNavItems = listOf(
     BottomNavItem(Route.Profile.path, "Profile", Icons.Filled.Person, Icons.Outlined.Person),
 )
 
-// Routes where the bottom bar should be hidden (detail screens)
-private val bottomBarHiddenRoutes = setOf(
-    Route.PlanDetail.path,
-    Route.ChatDetail.path,
-)
-
 @Composable
 fun MainScaffold() {
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-
-    // Hide bottom bar on detail screens
-    val showBottomBar = currentRoute == null ||
-            bottomBarHiddenRoutes.none { currentRoute.startsWith(it.substringBefore("{")) }
 
     Scaffold(
         bottomBar = {
-            if (showBottomBar) {
-                NavigationBar {
+            NavigationBar {
                     bottomNavItems.forEach { item ->
                         val selected =
                             navBackStackEntry?.destination?.hierarchy?.any { it.route == item.route } == true
@@ -94,7 +82,6 @@ fun MainScaffold() {
                             },
                         )
                     }
-                }
             }
         }
     ) { innerPadding ->
