@@ -101,14 +101,6 @@ fun MainScaffold() {
                 PlanDetailScreen(
                     planId = planId,
                     onBack = { navController.popBackStack() },
-                    onJoined = { roomId ->
-                        // Pop back to Feed, then open the chat room
-                        navController.popBackStack(Route.Feed.path, inclusive = false)
-                        navController.navigate(Route.Chats.path) {
-                            launchSingleTop = true
-                        }
-                        navController.navigateToChatDetail(roomId)
-                    },
                 )
             }
 

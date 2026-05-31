@@ -59,7 +59,6 @@ import java.util.Locale
 fun PlanDetailScreen(
     planId: String,
     onBack: () -> Unit,
-    onJoined: (roomId: String) -> Unit,
     viewModel: PlanDetailViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -68,7 +67,7 @@ fun PlanDetailScreen(
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is PlanDetailEvent.NavigateToChat -> onJoined(event.roomId)
+                is PlanDetailEvent.NavigateToChat -> Unit // stay on screen after joining
                 is PlanDetailEvent.LeftPlan -> onBack()
             }
         }
