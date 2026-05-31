@@ -1,20 +1,14 @@
 package com.kndrd.android.core.navigation
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.remember
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
-import com.kndrd.android.feature.chats.ui.ChatsScreen
 import com.kndrd.android.feature.chatdetail.ui.ChatDetailScreen
+import com.kndrd.android.feature.chats.ui.ChatsScreen
 import com.kndrd.android.feature.createplan.ui.CreatePlanScreen
 import com.kndrd.android.feature.feed.ui.FeedScreen
 import com.kndrd.android.feature.forum.ui.ForumScreen
@@ -43,10 +37,11 @@ fun KndrdNavGraph(
             route = Route.OnboardingGraph.path,
             startDestination = Route.Welcome.path,
         ) {
-            composable(Route.Welcome.path) {
-                val vm = hiltViewModel<OnboardingViewModel>(
+            composable(Route.Welcome.path) { backStackEntry ->
+                val onboardingEntry = remember(backStackEntry) {
                     rootNavController.getBackStackEntry(Route.OnboardingGraph.path)
-                )
+                }
+                val vm = hiltViewModel<OnboardingViewModel>(onboardingEntry)
                 WelcomeScreen(
                     onGetStarted = { rootNavController.navigate(Route.SignUp.path) },
                     onSignIn = { rootNavController.navigate(Route.SignUp.path) },
@@ -59,28 +54,31 @@ fun KndrdNavGraph(
                     },
                 )
             }
-            composable(Route.SignUp.path) {
-                val vm = hiltViewModel<OnboardingViewModel>(
+            composable(Route.SignUp.path) { backStackEntry ->
+                val onboardingEntry = remember(backStackEntry) {
                     rootNavController.getBackStackEntry(Route.OnboardingGraph.path)
-                )
+                }
+                val vm = hiltViewModel<OnboardingViewModel>(onboardingEntry)
                 SignUpScreen(
                     viewModel = vm,
                     onNext = { rootNavController.navigate(Route.Verification.path) },
                 )
             }
-            composable(Route.Verification.path) {
-                val vm = hiltViewModel<OnboardingViewModel>(
+            composable(Route.Verification.path) { backStackEntry ->
+                val onboardingEntry = remember(backStackEntry) {
                     rootNavController.getBackStackEntry(Route.OnboardingGraph.path)
-                )
+                }
+                val vm = hiltViewModel<OnboardingViewModel>(onboardingEntry)
                 VerificationScreen(
                     viewModel = vm,
                     onVerified = { rootNavController.navigate(Route.InterestSelection.path) },
                 )
             }
-            composable(Route.InterestSelection.path) {
-                val vm = hiltViewModel<OnboardingViewModel>(
+            composable(Route.InterestSelection.path) { backStackEntry ->
+                val onboardingEntry = remember(backStackEntry) {
                     rootNavController.getBackStackEntry(Route.OnboardingGraph.path)
-                )
+                }
+                val vm = hiltViewModel<OnboardingViewModel>(onboardingEntry)
                 InterestSelectionScreen(
                     viewModel = vm,
                     onDone = {
