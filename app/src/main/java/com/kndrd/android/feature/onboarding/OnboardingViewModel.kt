@@ -48,27 +48,33 @@ class OnboardingViewModel @Inject constructor(
     }
 
     fun continueAsGuest(onDone: () -> Unit) {
+        // Set up the in-memory user synchronously so the rest of the app sees a valid
+        // current user before any recomposition fires.
+        val user = User(
+            id = "guest",
+            name = "Guest",
+            age = 0,
+            bio = "",
+            photoUrl = null,
+            neighborhood = "New York City",
+            interests = listOf(Interest.COFFEE, Interest.FOOD, Interest.OUTDOORS),
+            isVerified = false,
+            joinedPlanIds = emptyList(),
+        )
+        userRepository.setCurrentUser(user)
+
+        // Navigate immediately — before DataStore write, so the MainActivity
+        // recomposition triggered by the DataStore emission arrives after the
+        // NavController has already moved to the main graph.
+        onDone()
+
+        // Persist in the background so next launch also skips onboarding.
         viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
-            val user = User(
-                id = "guest",
-                name = "Guest",
-                age = 0,
-                bio = "",
-                photoUrl = null,
-                neighborhood = "New York City",
-                interests = listOf(Interest.COFFEE, Interest.FOOD, Interest.OUTDOORS),
-                isVerified = false,
-                joinedPlanIds = emptyList(),
-            )
-            userRepository.setCurrentUser(user)
             userPreferences.completeOnboarding(
                 userId = "guest",
                 name = "Guest",
                 interestsJson = "COFFEE,FOOD,OUTDOORS",
             )
-            _state.update { it.copy(isLoading = false) }
-            onDone()
         }
     }
 

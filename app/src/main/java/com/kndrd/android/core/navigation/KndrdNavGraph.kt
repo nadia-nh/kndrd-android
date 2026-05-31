@@ -31,10 +31,13 @@ fun KndrdNavGraph(
     startDestination: String = Route.OnboardingGraph.path,
 ) {
     val rootNavController = rememberNavController()
+    // Lock the start destination on first composition. Changes to startDestination
+    // (e.g. from DataStore emitting while navigating) must not re-initialize NavHost.
+    val initialStartDestination = remember { startDestination }
 
     NavHost(
         navController = rootNavController,
-        startDestination = startDestination,
+        startDestination = initialStartDestination,
     ) {
         navigation(
             route = Route.OnboardingGraph.path,
