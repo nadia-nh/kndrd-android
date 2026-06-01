@@ -39,6 +39,18 @@ fun PlanCard(plan: Plan, onClick: () -> Unit, modifier: Modifier = Modifier) {
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
     ) {
+        // Hero image
+        if (plan.imageUrl != null) {
+            AsyncImage(
+                model = plan.imageUrl,
+                contentDescription = plan.title,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp),
+                contentScale = ContentScale.Crop,
+            )
+        }
+
         Column(modifier = Modifier.padding(16.dp)) {
             // Interest + joined indicator
             Row(
