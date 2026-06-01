@@ -2,8 +2,10 @@ package com.kndrd.android.feature.feed.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -43,40 +45,45 @@ fun FeedScreen(
             )
         }
     ) { innerPadding ->
-        PullToRefreshBox(
-            isRefreshing = state.isRefreshing,
-            onRefresh = viewModel::refresh,
-            modifier = Modifier.fillMaxSize().padding(innerPadding),
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
         ) {
-            if (state.isLoading) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    item {
-                        FeedFilterBar(
-                            selectedInterest = state.selectedInterest,
-                            onInterestSelected = viewModel::selectInterest,
+            // Filter bar sits above the scrollable list so TabRow spans full width
+            FeedFilterBar(
+                selectedStatus = state.selectedStatus,
+                onStatusSelected = viewModel::selectStatus,
+                selectedInterest = state.selectedInterest,
+                onInterestSelected = viewModel::selectInterest,
+                modifier = Modifier.fillMaxWidth(),
+            )
+
+            PullToRefreshBox(
+                isRefreshing = state.isRefreshing,
+                onRefresh = viewModel::refresh,
+                modifier = Modifier.fillMaxSize(),
+            ) {
+                if (state.isLoading) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
+                    }
+                } else if (state.plans.isEmpty()) {
+                    Box(
+                        modifier = Modifier.fillMaxSize().padding(top = 48.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            "No plans yet — be the first to post one!",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
-                    if (state.plans.isEmpty()) {
-                        item {
-                            Box(
-                                modifier = Modifier.fillMaxSize().padding(top = 48.dp),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Text(
-                                    "No plans yet — be the first to post one!",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                        }
-                    } else {
+                } else {
+                    LazyColumn(
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
                         items(state.plans, key = { it.id }) { plan ->
                             PlanCard(
                                 plan = plan,
