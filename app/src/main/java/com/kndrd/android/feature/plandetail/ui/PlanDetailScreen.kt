@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -98,10 +99,25 @@ fun PlanDetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+                .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            // Hero image
+            if (plan.imageUrl != null) {
+                AsyncImage(
+                    model = plan.imageUrl,
+                    contentDescription = plan.title,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp),
+                    contentScale = ContentScale.Crop,
+                )
+            }
+
+            Column(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
             SuggestionChip(
                 onClick = {},
                 label = { Text("${plan.interest.emoji} ${plan.interest.displayName}") },
@@ -235,6 +251,7 @@ fun PlanDetailScreen(
                     }
                 }
             }
-        }
+            } // end inner padding Column
+        } // end outer scroll Column
     }
 }
